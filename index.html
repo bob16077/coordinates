@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Guess Coordinates</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+    <style>
+      body {
+        margin: 0;
+        overflow: hidden;
+        font-family: 'Arial', sans-serif;
+      }
+
+      #map {
+        height: calc(100vh - 50px);
+      }
+
+      #guessButton {
+        position: fixed;
+        bottom: 0;
+        width: 100vw;
+        padding: 15px;
+        font-size: 18px;
+        background-color: #3498db;
+        color: #fff;
+        text-align: center;
+        cursor: pointer;
+      }
+
+      #popupWrapper {
+        display: none;
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        background: rgba(52, 152, 219, 0.8);
+        padding: 15px;
+        color: #fff;
+        text-align: center;
+        z-index: 1000;
+        border-radius: 8px;
+        animation: fadeInOut 3s forwards;
+      }
+
+      @keyframes fadeInOut {
+        0% {
+          opacity: 0;
+        }
+
+        10% {
+          opacity: 1;
+        }
+
+        90% {
+          opacity: 1;
+        }
+
+        100% {
+          opacity: 0;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div id="map"></div>
+    <div id="guessButton">Guess Coordinates</div>
+    <div id="popupWrapper">
+      <div id="popup"></div>
+    </div>
+    <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+    <script>
+      var map = L.map('map').setView([0, 0], 2);
+      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '&copy; OpenStreetMap contributors'
+      }).addTo(map);
+      var marker;
+      map.on('click', function(e) {
+        if (marker) {
+          map.removeLayer(marker);
+        }
+        marker = L.marker(e.latlng).addTo(map);
+      });
+      document.getElementById('guessButton').addEventListener('click', function() {
+        if (marker) {
+          var coordinates = marker.getLatLng();
+          displayPopup('Coordinates copied: ' + coordinates.lat.toFixed(3) + ', ' + coordinates.lng.toFixed(3) + '. Please go back and click paste (CTRL + V)');
+          copyToClipboard(coordinates.lat + ', ' + coordinates.lng);
+        } else {
+          displayPopup('Please mark a position on the map first.');
+        }
+      });
+
+      function copyToClipboard(text) {
+        var textarea = document.createElement('textarea');
+        textarea.value = text;
+        document.body.appendChild(textarea);
+        textarea.select();
+        document.execCommand('copy');
+        document.body.removeChild(textarea);
+      }
+
+      function displayPopup(message) {
+        var popupWrapper = document.getElementById('popupWrapper');
+        var popup = document.getElementById('popup');
+        popup.innerHTML = message;
+        popupWrapper.style.display = 'block';
+        setTimeout(function() {
+          popupWrapper.style.display = 'none';
+        }, 3000); // Display for 3 seconds
+      }
+    </script>
+  </body>
+</html>
