@@ -1,141 +1,164 @@
-<!DOCTYPE html>
-<html lang="en">
-  <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Guess Coordinates</title>
-    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
-    <style>
-      body {
-        margin: 0;
-        overflow: hidden;
-        font-family: 'Arial', sans-serif;
-      }
-
-      #map {
-        height: calc(100vh - 50px);
-      }
-
-      #guessButton {
-        position: fixed;
-        bottom: 0;
-        width: 100vw;
-        padding: 15px;
-        font-size: 18px;
-        background-color: #3498db;
-        color: #fff;
-        text-align: center;
-        cursor: pointer;
-      }
-
-      #popupWrapper {
-        display: none;
-        position: fixed;
-        top: 50%;
-        left: 50%;
-        transform: translate(-50%, -50%);
-        background: rgba(52, 152, 219, 0.8);
-        padding: 15px;
-        color: #fff;
-        text-align: center;
-        z-index: 1000;
-        border-radius: 8px;
-        animation: fadeInOut 3s forwards;
-      }
-
-      @keyframes fadeInOut {
-        0% {
-          opacity: 0;
-        }
-
-        10% {
-          opacity: 1;
-        }
-
-        90% {
-          opacity: 1;
-        }
-
-        100% {
-          opacity: 0;
-        }
-      }
-    </style>
-  </head>
-  <body>
-    <div id="map"></div>
-    <div id="guessButton">Guess Coordinates</div>
-    <div id="popupWrapper">
-      <div id="popup"></div>
-    </div>
-    <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
-    <script>
-      var map = L.map('map').setView([0, 0], 2);
-      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-        attribution: '&copy; OpenStreetMap contributors'
-      }).addTo(map);
-      var customIconUrl = getParameterByName('icon'); // Get custom icon URL from query parameters
-      var customIcon = customIconUrl ? L.divIcon({
-        className: 'custom-icon',
-        html: ' < img src = "' + customIconUrl + '"
-        width = "30"
-        height = "30"
-        style = "border-radius: 50%;" / > ',
-        iconSize: [30, 30],
-        iconAnchor: [15, 15],
-      }) : L.icon({
-        iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-red.png',
-        iconSize: [25, 41],
-        iconAnchor: [12, 41],
-        popupAnchor: [1, -34],
-      });
-      var marker;
-      map.on('click', function(e) {
-        if (marker) {
-          map.removeLayer(marker);
-        }
-        marker = L.marker(e.latlng, {
-          icon: customIcon
-        }).addTo(map);
-      });
-      document.getElementById('guessButton').addEventListener('click', function() {
-        if (marker) {
-          var coordinates = marker.getLatLng();
-          displayPopup('Coordinates copied: ' + coordinates.lat.toFixed(3) + ', ' + coordinates.lng.toFixed(3) + '. Please go back and click paste (CTRL + V)');
-          copyToClipboard(coordinates.lat + ', ' + coordinates.lng);
-        } else {
-          displayPopup('Please mark a position on the map first.');
-        }
-      });
-
-      function copyToClipboard(text) {
-        var textarea = document.createElement('textarea');
-        textarea.value = text;
-        document.body.appendChild(textarea);
-        textarea.select();
-        document.execCommand('copy');
-        document.body.removeChild(textarea);
-      }
-
-      function displayPopup(message) {
-        var popupWrapper = document.getElementById('popupWrapper');
-        var popup = document.getElementById('popup');
-        popup.innerHTML = message;
-        popupWrapper.style.display = 'block';
-        setTimeout(function() {
-          popupWrapper.style.display = 'none';
-        }, 3000); // Display for 3 seconds
-      }
-
-      function getParameterByName(name, url) {
-        if (!url) url = window.location.href;
-        name = name.replace(/[\[\]]/g, '\\$&');
-        var regex = new RegExp('[?&]' + name + '(=([^&#]*)|&|#|$)'),
-          results = regex.exec(url);
-        if (!results) return null;
-        if (!results[2]) return '';
-        return decodeURIComponent(results[2].replace(/\+/g, ' '));
-      }
-    </script>
-  </body>
-</html>
+<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Guess Coordinates</title><link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css"><style>body{margin:0;overflow:hidden;font-family:Arial,sans-serif}#map{height:calc(100vh - 50px)}#guessButton{position:fixed;bottom:0;width:100vw;padding:15px;font-size:18px;background-color:#3498db;color:#fff;text-align:center;cursor:pointer}#popupWrapper{display:none;position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:rgba(52,152,219,.8);padding:15px;color:#fff;text-align:center;z-index:1000;border-radius:8px;animation:fadeInOut 5s forwards}@keyframes fadeInOut{0%{opacity:0}10%{opacity:1}90%{opacity:1}100%{opacity:0}}.custom-icon{background-color:transparent;border-radius:50%;width:40px;height:40px;overflow:hidden;border:2px solid #000}.custom-icon-img{width:100%;height:100%;object-fit:cover}</style></head><body><div id="map"></div><div id="guessButton">Guess Coordinates</div><div id="popupWrapper"><div id="popup"></div></div><script src="https://unpkg.com/leaflet/dist/leaflet.js"></script><script>
+          function getQueryParam(param) {
+            const urlSearchParams = new URLSearchParams(window.location.search);
+            return urlSearchParams.get(param);
+          }
+    
+          // Function to set the language for OpenStreetMap
+          function setOSMLanguage() {
+            const langParam = getQueryParam('lang') || 'en';
+            L.tileLayer(`https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png?lang=${langParam}`, {
+              attribution: '&copy; OpenStreetMap contributors'
+            }).addTo(map);
+          }
+    
+          var map = L.map('map').setView([0, 0], 2);
+          setOSMLanguage();
+    
+          var customIconUrl = getQueryParam('icon'); // Get custom icon URL from query parameters
+          var customIcon = customIconUrl
+            ? L.divIcon({
+                className: 'custom-icon',
+                html: '<img src="' + customIconUrl + '" class="custom-icon-img"/>',
+                iconSize: [40, 40],
+                iconAnchor: [20, 20],
+              })
+            : L.icon({
+                iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-red.png',
+                iconSize: [25, 41],
+                iconAnchor: [12, 41],
+                popupAnchor: [1, -34],
+              });
+    
+          var marker;
+          map.on('click', function(e) {
+            if (marker) {
+              map.removeLayer(marker);
+            }
+            marker = L.marker(e.latlng, {
+              icon: customIcon
+            }).addTo(map);
+          });
+    
+          document.getElementById('guessButton').addEventListener('click', function() {
+            if (marker) {
+              var coordinates = marker.getLatLng();
+              displayPopup('copied', coordinates.lat.toFixed(3) + ', ' + coordinates.lng.toFixed(3));
+              copyToClipboard(coordinates.lat + ', ' + coordinates.lng);
+            } else {
+              displayPopup('markFirst', '');
+            }
+          });
+    
+          function copyToClipboard(text) {
+            var textarea = document.createElement('textarea');
+            textarea.value = text;
+            document.body.appendChild(textarea);
+            textarea.select();
+            document.execCommand('copy');
+            document.body.removeChild(textarea);
+          }
+    
+          var translations = {
+            "en": {
+              copied: "Coordinates copied: ",
+              markFirst: "Please mark a position on the map first.",
+              pasteInstructions: "Please go back and click paste (CTRL + V)",
+              guessButtonText: "Guess Coordinates"
+            },
+            "kr": {
+              copied: "좌표가 복사되었습니다: ",
+              markFirst: "먼저 지도상에 위치를 표시하세요.",
+              pasteInstructions: "뒤로 돌아가서 붙여넣기를 클릭하세요 (CTRL + V)",
+              guessButtonText: "좌표 추측"
+            },
+            "pt-BR": {
+              copied: "Coordenadas copiadas: ",
+              markFirst: "Por favor, marque uma posição no mapa primeiro.",
+              pasteInstructions: "Por favor, volte e clique em colar (CTRL + V)",
+              guessButtonText: "Adivinhar Coordenadas"
+            },
+            "pt": {
+              copied: "Coordenadas copiadas: ",
+              markFirst: "Por favor, marque uma posição no mapa primeiro.",
+              pasteInstructions: "Por favor, volte e clique em colar (CTRL + V)",
+              guessButtonText: "Adivinhar Coordenadas"
+            },
+            "nl": {
+              copied: "Coördinaten gekopieerd: ",
+              markFirst: "Markeer eerst een positie op de kaart.",
+              pasteInstructions: "Ga terug en klik op plakken (CTRL + V)",
+              guessButtonText: "Raad Coördinaten"
+            },
+            "hr": {
+              copied: "Koordinate kopirane: ",
+              markFirst: "Prvo označite poziciju na karti.",
+              pasteInstructions: "Vratite se i kliknite zalijepi (CTRL + V)",
+              guessButtonText: "Pogodi Koordinate"
+            },
+            "fa": {
+              copied: "مختصات کپی شده: ",
+              markFirst: "لطفاً ابتدا یک موقعیت روی نقشه علامت گذاری کنید.",
+              pasteInstructions: "لطفاً برگشته و روی چسباندن کلیک کنید (CTRL + V)",
+              guessButtonText: "حدس زدن مختصات"
+            },
+            "de": {
+              copied: "Koordinaten kopiert: ",
+              markFirst: "Bitte markieren Sie zuerst eine Position auf der Karte.",
+              pasteInstructions: "Bitte zurückgehen und auf Einfügen klicken (CTRL + V)",
+              guessButtonText: "Koordinaten raten"
+            },
+            "es": {
+              copied: "Coordenadas copiadas: ",
+              markFirst: "Por favor, marque una posición en el mapa primero.",
+              pasteInstructions: "Vuelve y haz clic en pegar (CTRL + V)",
+              guessButtonText: "Adivinar Coordenadas"
+            },
+            "fr": {
+              copied: "Coordonnées copiées : ",
+              markFirst: "Veuillez d'abord marquer une position sur la carte.",
+              pasteInstructions: "Revenez en arrière et cliquez sur coller (CTRL + V)",
+              guessButtonText: "Devinez les Coordonnées"
+            },
+            "ja": {
+              copied: "座標がコピーされました：",
+              markFirst: "まず地図上に位置をマークしてください。",
+              pasteInstructions: "戻って貼り付けをクリックしてください（CTRL + V）",
+              guessButtonText: "座標を推測"
+            },
+            "it": {
+              copied: "Coordinate copiate: ",
+              markFirst: "Si prega di segnare una posizione sulla mappa prima.",
+              pasteInstructions: "Torna indietro e clicca su incolla (CTRL + V)",
+              guessButtonText: "Indovina le Coordinate"
+            },
+            "cn": {
+              copied: "坐标已复制：",
+              markFirst: "请先在地图上标记一个位置。",
+              pasteInstructions: "请返回并点击粘贴（CTRL + V）",
+              guessButtonText: "猜测坐标"
+            },
+            "tr": {
+              copied: "Koordinatlar kopyalandı: ",
+              markFirst: "Lütfen önce haritada bir konum işaretleyin.",
+              pasteInstructions: "Lütfen geri gidip yapıştırın (CTRL + V)",
+              guessButtonText: "Koordinatları Tahmin Et"
+            }
+          };
+    
+          function displayPopup(type, message) {
+            var popupWrapper = document.getElementById('popupWrapper');
+            var popup = document.getElementById('popup');
+            
+            const langParam = getQueryParam('lang') || 'en';
+            
+            popup.innerHTML = translations[langParam][type] + message + (type === 'copied' ? '. ' + translations[langParam]['pasteInstructions'] : '');
+            
+            popupWrapper.style.display = 'block';
+            setTimeout(function() {
+              popupWrapper.style.display = 'none';
+            }, 6000);
+          }
+    
+          var guessButton = document.getElementById('guessButton');
+          guessButton.innerText = translations[getQueryParam('lang') || 'en']['guessButtonText'];</script></body></html>
