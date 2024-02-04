@@ -82,15 +82,25 @@
             var bounds = L.latLngBounds([[lat1, lon1], [lat2, lon2]]);
             map.fitBounds(bounds.pad(0.05)); // Adjusted padding
 
-            try {
-                await new Promise(resolve => tileLayer.on("load", () => resolve()));
-                const dataURL = await domtoimage.toPng(mapElement, { width, height });
-                document.body.removeChild(mapElement);
+            await new Promise(resolve => tileLayer.on("load", () => resolve()));
+            const dataURL = await domtoimage.toPng(mapElement, { width, height });
+            document.body.removeChild(mapElement);
+            document.write(dataURL)
 
-                const imgElement = document.createElement("img");
-                imgElement.src = dataURL;
-                document.body.appendChild(imgElement);
-            } catch (error) {}
+            // const imgElement = document.createElement("img");
+            // imgElement.src = dataURL;
+            // document.body.appendChild(imgElement);
+
+            // var blob = new Blob([atob(dataURL.split(',')[1])], { type: 'image/png' });
+
+            // // Create a temporary URL for the Blob using the createObjectURL method
+            // var imageUrl = URL.createObjectURL(blob);
+
+            // // Redirect to the image URL
+            // window.location.href = imageUrl;
+
+            // // Release the Blob URL after redirection
+            // URL.revokeObjectURL(imageUrl);
         };
 
         generateImage();
