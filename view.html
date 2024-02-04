@@ -17,93 +17,69 @@
 </head>
 <body>
     <script>
-        const generateImage = async () => {
-            const width = 800, height = 500;
+        const width = 800, height = 500;
 
-            const mapElement = document.createElement("div");
-            mapElement.style.width = `${width}px`;
-            mapElement.style.height = `${height}px`;
-            document.body.appendChild(mapElement);
+        const mapElement = document.createElement("div");
+        mapElement.style.width = `${width}px`;
+        mapElement.style.height = `${height}px`;
+        document.body.appendChild(mapElement);
 
-            // Get latitude and longitude from URI components
-            var urlParams = new URLSearchParams(window.location.search);
-            var lat1 = parseFloat(urlParams.get('lat1')) || 0;
-            var lon1 = parseFloat(urlParams.get('lon1')) || 0;
-            var lat2 = parseFloat(urlParams.get('lat2')) || 0;
-            var lon2 = parseFloat(urlParams.get('lon2')) || 0;
-            var iconUrl = urlParams.get('icon');
+        // Get latitude and longitude from URI components
+        var urlParams = new URLSearchParams(window.location.search);
+        var lat1 = parseFloat(urlParams.get('lat1')) || 0;
+        var lon1 = parseFloat(urlParams.get('lon1')) || 0;
+        var lat2 = parseFloat(urlParams.get('lat2')) || 0;
+        var lon2 = parseFloat(urlParams.get('lon2')) || 0;
+        var iconUrl = urlParams.get('icon');
 
-            // Create Leaflet map with a default center and zoom level
-            const map = L.map(mapElement, {
-                attributionControl: false,
-                zoomControl: false,
-                fadeAnimation: false,
-                zoomAnimation: false
-            }).setView([0, 0], 2); // Adjusted zoom level
+        // Create Leaflet map with a default center and zoom level
+        const map = L.map(mapElement, {
+            attributionControl: false,
+            zoomControl: false,
+            fadeAnimation: false,
+            zoomAnimation: false
+        }).setView([0, 0], 2); // Adjusted zoom level
 
-            // Add a default base layer (OpenStreetMap)
-            const tileLayer = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-                attribution: '&copy; OpenStreetMap Developers'
-            }).addTo(map);
+        // Add a default base layer (OpenStreetMap)
+        const tileLayer = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '&copy; OpenStreetMap Developers'
+        }).addTo(map);
 
-            var customIcon = iconUrl ? L.divIcon({
-                className: 'custom-icon',
-                html: '<img src="' + iconUrl + '" class="custom-icon-img"/>',
-                iconSize: [40, 40],
-                iconAnchor: [20, 20],
-            }) : L.icon({
-                iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-red.png',
-                iconSize: [25, 41],
-                iconAnchor: [12, 41],
-                popupAnchor: [1, -34],
-            });
+        var customIcon = iconUrl ? L.divIcon({
+            className: 'custom-icon',
+            html: '<img src="' + iconUrl + '" class="custom-icon-img"/>',
+            iconSize: [40, 40],
+            iconAnchor: [20, 20],
+        }) : L.icon({
+            iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-red.png',
+            iconSize: [25, 41],
+            iconAnchor: [12, 41],
+            popupAnchor: [1, -34],
+        });
 
-            var marker1 = L.marker([lat1, lon1], { icon: customIcon }).addTo(map);
-            var marker2 = L.marker([lat2, lon2]).addTo(map);
+        var marker1 = L.marker([lat1, lon1], { icon: customIcon }).addTo(map);
+        var marker2 = L.marker([lat2, lon2]).addTo(map);
 
-            // Add a dashed polyline to connect the two points
-            var polyline = L.polyline([[lat1, lon1], [lat2, lon2]], {
-                color: 'red',
-                dashArray: '10, 5' // Adjusted the dash pattern as needed
-            }).addTo(map);
+        // Add a dashed polyline to connect the two points
+        var polyline = L.polyline([[lat1, lon1], [lat2, lon2]], {
+            color: 'red',
+            dashArray: '10, 5' // Adjusted the dash pattern as needed
+        }).addTo(map);
 
-            // Calculate the distance between the two points
-            var distance = marker1.getLatLng().distanceTo(marker2.getLatLng());
+        // Calculate the distance between the two points
+        var distance = marker1.getLatLng().distanceTo(marker2.getLatLng());
 
-            // Display the distance as a text label on the map
-            var textLabel = L.divIcon({
-                className: 'text-label',
-                html: '<div>' + (distance / 1000).toLocaleString({ minimumFractionDigits: 2 }) + ' km</div>'
-            });
+        // Display the distance as a text label on the map
+        var textLabel = L.divIcon({
+            className: 'text-label',
+            html: '<div>' + (distance / 1000).toLocaleString({ minimumFractionDigits: 2 }) + ' km</div>'
+        });
 
-            var distanceMarker = L.marker(polyline.getBounds().getCenter(), { icon: textLabel }).addTo(map);
+        var distanceMarker = L.marker(polyline.getBounds().getCenter(), { icon: textLabel }).addTo(map);
 
-            // Fit the map to the bounds of both points with a bit less padding
-            var bounds = L.latLngBounds([[lat1, lon1], [lat2, lon2]]);
-            map.fitBounds(bounds.pad(0.05)); // Adjusted padding
-
-            await new Promise(resolve => tileLayer.on("load", () => resolve()));
-            const dataURL = await domtoimage.toPng(mapElement, { width, height });
-            document.body.removeChild(mapElement);
-            document.write(dataURL)
-
-            // const imgElement = document.createElement("img");
-            // imgElement.src = dataURL;
-            // document.body.appendChild(imgElement);
-
-            // var blob = new Blob([atob(dataURL.split(',')[1])], { type: 'image/png' });
-
-            // // Create a temporary URL for the Blob using the createObjectURL method
-            // var imageUrl = URL.createObjectURL(blob);
-
-            // // Redirect to the image URL
-            // window.location.href = imageUrl;
-
-            // // Release the Blob URL after redirection
-            // URL.revokeObjectURL(imageUrl);
-        };
-
-        generateImage();
+        // Fit the map to the bounds of both points with a bit less padding
+        var bounds = L.latLngBounds([[lat1, lon1], [lat2, lon2]]);
+        map.fitBounds(bounds.pad(0.05));
     </script>
 </body>
 </html>
