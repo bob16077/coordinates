@@ -29,13 +29,6 @@
             return `${module.exports.formatLargeNumber(Math.round(distance))} ${LARGE_UNIT}`;
         };
         
-        const width = 800, height = 500;
-
-        const mapElement = document.createElement("div");
-        mapElement.style.width = `${width}px`;
-        mapElement.style.height = `${height}px`;
-        document.body.appendChild(mapElement);
-
         // Get latitude and longitude from URI components
         var urlParams = new URLSearchParams(window.location.search);
         var lat1 = parseFloat(urlParams.get('lat1')) || 0;
@@ -44,6 +37,13 @@
         var lon2 = parseFloat(urlParams.get('lon2')) || 0;
         var iconUrl = urlParams.get('icon');
         var units = urlParams.get('units') || 'metric';
+        const width = parseFloar(urlParams.get('width')) || 800;
+        const height = parseFloar(urlParams.get('height')) || 500;
+
+        const mapElement = document.createElement("div");
+        mapElement.style.width = `${width}px`;
+        mapElement.style.height = `${height}px`;
+        document.body.appendChild(mapElement);
 
         // Create Leaflet map with a default center and zoom level
         const map = L.map(mapElement, {
