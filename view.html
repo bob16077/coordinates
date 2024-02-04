@@ -17,6 +17,18 @@
 </head>
 <body>
     <script>
+        const formatDistance = (distance, distanceUnit = 'metric') => {
+            const SMALL_UNIT = distanceUnit === 'imperial' ? 'yd' : 'm';
+            const LARGE_UNIT = distanceUnit === 'imperial' ? 'miles' : 'km';
+            const UNIT_MULTIPLIER = distanceUnit === 'imperial' ? 1760 : 1000;
+        
+            if (distance < 1) {
+                return `${Math.round(distance * UNIT_MULTIPLIER)} ${SMALL_UNIT}`;
+            };
+        
+            return `${module.exports.formatLargeNumber(Math.round(distance))} ${LARGE_UNIT}`;
+        };
+        
         const width = 800, height = 500;
 
         const mapElement = document.createElement("div");
@@ -31,6 +43,7 @@
         var lat2 = parseFloat(urlParams.get('lat2')) || 0;
         var lon2 = parseFloat(urlParams.get('lon2')) || 0;
         var iconUrl = urlParams.get('icon');
+        var units = urlParams.get('units') || 'metric';
 
         // Create Leaflet map with a default center and zoom level
         const map = L.map(mapElement, {
@@ -72,7 +85,7 @@
         // Display the distance as a text label on the map
         var textLabel = L.divIcon({
             className: 'text-label',
-            html: '<div>' + (distance / 1000).toLocaleString({ minimumFractionDigits: 2 }) + ' km</div>'
+            html: '<div>' + formatDistance(distance / 1000, units) + '</div>'
         });
 
         var distanceMarker = L.marker(polyline.getBounds().getCenter(), { icon: textLabel }).addTo(map);
