@@ -26,9 +26,40 @@
                 return `${Math.round(distance * UNIT_MULTIPLIER)} ${SMALL_UNIT}`;
             };
         
-            return `${module.exports.formatLargeNumber(Math.round(distance))} ${LARGE_UNIT}`;
+            return `${formatLargeNumber(Math.round(distance))} ${LARGE_UNIT}`;
+        };
+
+        const formatLargeNumber = (number) => {
+            if (typeof number === 'undefined') return;
+        
+            const numberAsString = number.toString();
+        
+            if (number >= 1000000) {
+                return '1M +';
+            }
+        
+            if (number >= 100000) {
+                return '100K +';
+            }
+        
+            if (number >= 10000) {
+                return numberAsString.substring(0, 2) + ',' + numberAsString.substring(2, 5);
+            }
+        
+            if (number >= 1000) {
+                return numberAsString.substring(0, 1) + ',' + numberAsString.substring(1, 5);
+            }
+        
+            return numberAsString;
         };
         
+        const width = 800, height = 500;
+
+        const mapElement = document.createElement("div");
+        mapElement.style.width = `${width}px`;
+        mapElement.style.height = `${height}px`;
+        document.body.appendChild(mapElement);
+
         // Get latitude and longitude from URI components
         var urlParams = new URLSearchParams(window.location.search);
         var lat1 = parseFloat(urlParams.get('lat1')) || 0;
@@ -37,13 +68,6 @@
         var lon2 = parseFloat(urlParams.get('lon2')) || 0;
         var iconUrl = urlParams.get('icon');
         var units = urlParams.get('units') || 'metric';
-        const width = parseFloar(urlParams.get('width')) || 800;
-        const height = parseFloar(urlParams.get('height')) || 500;
-
-        const mapElement = document.createElement("div");
-        mapElement.style.width = `${width}px`;
-        mapElement.style.height = `${height}px`;
-        document.body.appendChild(mapElement);
 
         // Create Leaflet map with a default center and zoom level
         const map = L.map(mapElement, {
@@ -81,6 +105,7 @@
 
         // Calculate the distance between the two points
         var distance = marker1.getLatLng().distanceTo(marker2.getLatLng());
+        console.log(formatDistance(distance / 1000, units))
 
         // Display the distance as a text label on the map
         var textLabel = L.divIcon({
