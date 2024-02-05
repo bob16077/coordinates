@@ -10,7 +10,9 @@
         .custom-icon { background-color: transparent; border-radius: 50%; width: 40px; height: 40px; overflow: hidden; border: 2px solid #000; }
         .custom-icon-img { width: 100%; height: 100%; object-fit: cover; }
         .text-label { font-size: 16px; text-align: 'center'; }
-        body { margin: 0; overflow: hidden; }
+        body { margin: 0; overflow: hidden }
+        .leaflet-layer, .leaflet-control-zoom-in, .leaflet-control-zoom-out, .leaflet-control-attribution { filter: none; }
+        .invert-style { filter: invert(100%) hue-rotate(180deg) brightness(95%) contrast(90%); }
     </style>
     <script src="https://unpkg.com/leaflet@1.5.1/dist/leaflet.js"></script>
 </head>
@@ -52,19 +54,26 @@
             return numberAsString;
         };
 
-        // Get latitude and longitude from URI components
+        const placeIcon = (lat, lon, icon, map) => {
+            var customIcon = L.divIcon({
+                className: 'custom-icon',
+                html: '<img src="' + icon + '" class="custom-icon-img"/>',
+                iconSize: [40, 40],
+                iconAnchor: [20, 20],
+            });
+
+            if (icon) return L.marker([lat, lon], { icon: customIcon }).addTo(map);
+            else return L.marker([lat, lon]).addTo(map);
+        };
+        
         var urlParams = new URLSearchParams(window.location.search);
-        var lat1 = parseFloat(urlParams.get('lat1')) || 0;
-        var lon1 = parseFloat(urlParams.get('lon1')) || 0;
-        var lat2 = parseFloat(urlParams.get('lat2')) || 0;
-        var lon2 = parseFloat(urlParams.get('lon2')) || 0;
-        var iconUrl = urlParams.get('icon');
         var units = urlParams.get('units') || 'metric';
         var noUI = urlParams.get('noui') == 'true' ? true : false;
 
         const mapElement = document.createElement("div");
         if (noUI) mapElement.style.width = `800px`;
         mapElement.style.height = !noUI ? '100vh' : `500px`;
+        document.body.style['background-color'] = 'black';
         document.body.appendChild(mapElement);
 
         // Create Leaflet map with a default center and zoom level
@@ -80,41 +89,52 @@
             attribution: '&copy; OpenStreetMap Developers'
         }).addTo(map);
 
-        var customIcon = iconUrl ? L.divIcon({
-            className: 'custom-icon',
-            html: '<img src="' + iconUrl + '" class="custom-icon-img"/>',
-            iconSize: [40, 40],
-            iconAnchor: [20, 20],
-        }) : L.icon({
-            iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-red.png',
-            iconSize: [25, 41],
-            iconAnchor: [12, 41],
-            popupAnchor: [1, -34],
-        });
+        const lons = [];
+        const lats = [];
 
-        var marker1 = L.marker([lat1, lon1], { icon: customIcon }).addTo(map);
-        var marker2 = L.marker([lat2, lon2]).addTo(map);
+        const icons = decodeURIComponent(urlParams.toString()).split('&abc').slice(1);
+        for (let cat of icons) {
+            cat = JSON.parse('{' + cat.split('={')[1]);
+            const keys = Object.keys(cat);
+            if (keys.length == 2) {
+                const first = Object.values(cat)[0];
+                const second = Object.values(cat)[1];
+                const firstMarker = placeIcon(first.lat, first.lon, first.icon, map);
+                const secondMarker = placeIcon(second.lat, second.lon, second.icon, map);
+                lons.push(first.lon, second.lon);
+                lats.push(first.lat, second.lat);
 
-        // Add a dashed polyline to connect the two points
-        var polyline = L.polyline([[lat1, lon1], [lat2, lon2]], {
-            color: 'red',
-            dashArray: '10, 8' // Adjusted the dash pattern as needed
-        }).addTo(map);
+                var polyline = L.polyline([[first.lat, first.lon], [second.lat, second.lon]], {
+                    color: 'red',
+                    dashArray: '10, 8'
+                }).addTo(map);
+                
+                if (icons.length < 3) {
+                    // Calculate the distance between the two points
+                    var distance = firstMarker.getLatLng().distanceTo(secondMarker.getLatLng());
 
-        // Calculate the distance between the two points
-        var distance = marker1.getLatLng().distanceTo(marker2.getLatLng());
+                    // Display the distance as a text label on the map
+                    var textLabel = L.divIcon({
+                        className: 'text-label',
+                        html: '<div id="text-label">' + formatDistance(distance / 1000, units) + '</div>'
+                    });
 
-        // Display the distance as a text label on the map
-        var textLabel = L.divIcon({
-            className: 'text-label',
-            html: '<div id="text-label">' + formatDistance(distance / 1000, units) + '</div>'
-        });
-
-        var distanceMarker = L.marker(polyline.getBounds().getCenter(), { icon: textLabel }).addTo(map);
+                    var distanceMarker = L.marker(polyline.getBounds().getCenter(), { icon: textLabel }).addTo(map);
+                };
+            } else {
+                const first = Object.values(cat)[0];
+                lons.push(first.lon);
+                lats.push(first.lat);
+                placeIcon(first.lat, first.lon, first.icon, map);
+            };
+        };
 
         // Fit the map to the bounds of both points with a bit less padding
-        var bounds = L.latLngBounds([[lat1, lon1], [lat2, lon2]]);
+        var bounds = L.latLngBounds([[Math.min(...lats), Math.min(...lons)], [Math.max(...lats), Math.max(...lons)]]);
         map.fitBounds(bounds.pad(0.05));
+
+        const mapDoneEvent = new Event('mapDone');
+        document.dispatchEvent(mapDoneEvent);
     </script>
 </body>
 </html>
