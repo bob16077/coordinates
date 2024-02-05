@@ -73,7 +73,6 @@
         const mapElement = document.createElement("div");
         if (noUI) mapElement.style.width = `800px`;
         mapElement.style.height = !noUI ? '100vh' : `500px`;
-        document.body.style['background-color'] = 'black';
         document.body.appendChild(mapElement);
 
         // Create Leaflet map with a default center and zoom level
@@ -94,7 +93,9 @@
 
         const icons = decodeURIComponent(urlParams.toString()).split('&abc').slice(1);
         for (let cat of icons) {
-            cat = JSON.parse('{' + cat.split('={')[1]);
+            cat = cat.split('&units=')[0];
+            console.log(cat.replace(/^loc\d*=/, ''))
+            cat = JSON.parse(cat.replace(/^loc\d*=/, ''));
             const keys = Object.keys(cat);
             if (keys.length == 2) {
                 const first = Object.values(cat)[0];
@@ -129,7 +130,6 @@
             };
         };
 
-        // Fit the map to the bounds of both points with a bit less padding
         var bounds = L.latLngBounds([[Math.min(...lats), Math.min(...lons)], [Math.max(...lats), Math.max(...lons)]]);
         map.fitBounds(bounds.pad(0.05));
 
