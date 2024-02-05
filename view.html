@@ -7,13 +7,12 @@
     <title>Map View</title>
     <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
     <style>
-        #map { height: 500px; width: 800px; }
         .custom-icon { background-color: transparent; border-radius: 50%; width: 40px; height: 40px; overflow: hidden; border: 2px solid #000; }
         .custom-icon-img { width: 100%; height: 100%; object-fit: cover; }
         .text-label { font-size: 16px; text-align: center; }
+        body { margin: 0; overflow: hidden; }
     </style>
     <script src="https://unpkg.com/leaflet@1.5.1/dist/leaflet.js"></script>
-    <script src="https://unpkg.com/dom-to-image@2.6.0/dist/dom-to-image.min.js"></script>
 </head>
 <body>
     <script>
@@ -52,13 +51,6 @@
         
             return numberAsString;
         };
-        
-        const width = 800, height = 500;
-
-        const mapElement = document.createElement("div");
-        mapElement.style.width = `${width}px`;
-        mapElement.style.height = `${height}px`;
-        document.body.appendChild(mapElement);
 
         // Get latitude and longitude from URI components
         var urlParams = new URLSearchParams(window.location.search);
@@ -68,13 +60,19 @@
         var lon2 = parseFloat(urlParams.get('lon2')) || 0;
         var iconUrl = urlParams.get('icon');
         var units = urlParams.get('units') || 'metric';
+        var noUI = urlParams.get('noui') == 'true' ? true : false;
+
+        const mapElement = document.createElement("div");
+        if (noUI) mapElement.style.width = `800px`;
+        mapElement.style.height = !noUI ? '100vh' : `500px`;
+        document.body.appendChild(mapElement);
 
         // Create Leaflet map with a default center and zoom level
         const map = L.map(mapElement, {
-            attributionControl: false,
-            zoomControl: false,
-            fadeAnimation: false,
-            zoomAnimation: false
+            attributionControl: !noUI,
+            zoomControl: !noUI,
+            fadeAnimation: !noUI,
+            zoomAnimation: !noUI
         }).setView([0, 0], 2); // Adjusted zoom level
 
         // Add a default base layer (OpenStreetMap)
@@ -105,7 +103,6 @@
 
         // Calculate the distance between the two points
         var distance = marker1.getLatLng().distanceTo(marker2.getLatLng());
-        console.log(formatDistance(distance / 1000, units))
 
         // Display the distance as a text label on the map
         var textLabel = L.divIcon({
