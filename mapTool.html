@@ -1,158 +1,164 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta http-equiv="X-UA-Compatible" content="ie=edge" />
-    <title>Map View</title>
-    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
-    <style>
-        .custom-icon {
-            background-color: transparent;
-            border-radius: 50%;
-            width: 40px;
-            height: 40px;
-            overflow: hidden;
-            border: 2px solid #000;
-        }
-        .custom-icon-img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-        }
-        .text-label {
-            font-size: 16px;
-            text-align: 'center';
-        }
-        body {
-            margin: 0;
-            overflow: hidden 
-        }
-        .leaflet-layer, .leaflet-control-zoom-in, .leaflet-control-zoom-out, .leaflet-control-attribution {
-            filter: none;
-        }
-        .invert-style {
-            filter: invert(100%) hue-rotate(180deg) brightness(95%) contrast(90%);
-        }
-    </style>
-    <script src="https://unpkg.com/leaflet@1.5.1/dist/leaflet.js"></script>
-</head>
-<body>
-    <script>
-        const formatDistance = (distance, distanceUnit = 'metric') => {
-            const SMALL_UNIT = distanceUnit === 'imperial' ? 'yd' : 'm';
-            const LARGE_UNIT = distanceUnit === 'imperial' ? 'miles' : 'km';
-            const UNIT_MULTIPLIER = distanceUnit === 'imperial' ? 1760 : 1000;
-        
-            if (distance < 1) {
-                return `${Math.round(distance * UNIT_MULTIPLIER)} ${SMALL_UNIT}`;
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <meta http-equiv="X-UA-Compatible" content="ie=edge" />
+        <title>Map View</title>
+        <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+        <style>
+            .custom-icon {
+                background-color: transparent;
+                border-radius: 50%;
+                width: 40px;
+                height: 40px;
+                overflow: hidden;
+                border: 2px solid #000;
+            }
+            .custom-icon-img {
+                width: 100%;
+                height: 100%;
+                object-fit: cover;
+            }
+            .text-label {
+                font-size: 16px;
+                text-align: 'center';
+            }
+            body {
+                margin: 0;
+                overflow: hidden;
+            }
+            .leaflet-layer,
+            .leaflet-control-zoom-in,
+            .leaflet-control-zoom-out,
+            .leaflet-control-attribution {
+                filter: none;
+            }
+            .invert-style {
+                filter: invert(100%) hue-rotate(180deg) brightness(95%) contrast(90%);
+            }
+        </style>
+        <script src="https://unpkg.com/leaflet@1.5.1/dist/leaflet.js"></script>
+    </head>
+    <body>
+        <script>
+            const formatDistance = (distance, distanceUnit = 'metric') => {
+                const SMALL_UNIT = distanceUnit === 'imperial' ? 'yd' : 'm';
+                const LARGE_UNIT = distanceUnit === 'imperial' ? 'miles' : 'km';
+                const UNIT_MULTIPLIER = distanceUnit === 'imperial' ? 1760 : 1000;
+
+                if (distance < 1) {
+                    return `${Math.round(distance * UNIT_MULTIPLIER)} ${SMALL_UNIT}`;
+                }
+
+                return `${formatLargeNumber(Math.round(distance))} ${LARGE_UNIT}`;
             };
-        
-            return `${formatLargeNumber(Math.round(distance))} ${LARGE_UNIT}`;
-        };
 
-        const formatLargeNumber = (number) => {
-            if (typeof number === 'undefined') return;
-        
-            const numberAsString = number.toString();
-        
-            if (number >= 1000000) {
-                return '1M +';
-            }
-        
-            if (number >= 100000) {
-                return '100K +';
-            }
-        
-            if (number >= 10000) {
-                return numberAsString.substring(0, 2) + ',' + numberAsString.substring(2, 5);
-            }
-        
-            if (number >= 1000) {
-                return numberAsString.substring(0, 1) + ',' + numberAsString.substring(1, 5);
-            }
-        
-            return numberAsString;
-        };
+            const formatLargeNumber = (number) => {
+                if (typeof number === 'undefined') return;
 
-        const placeIcon = (lat, lon, icon, map) => {
-            var customIcon = L.divIcon({
-                className: 'custom-icon',
-                html: '<img src="' + icon + '" class="custom-icon-img"/>',
-                iconSize: [40, 40],
-                iconAnchor: [20, 20],
-            });
+                const numberAsString = number.toString();
 
-            if (icon) return L.marker([lat, lon], { icon: customIcon }).addTo(map);
-            else return L.marker([lat, lon]).addTo(map);
-        };
-        
-        var urlParams = new URLSearchParams(window.location.search);
-        var units = urlParams.get('units') || 'metric';
-        var noUI = urlParams.get('noui') == 'true' ? true : false;
+                if (number >= 1000000) {
+                    return '1M +';
+                }
 
-        const mapElement = document.createElement("div");
-        if (noUI) mapElement.style.width = `800px`;
-        mapElement.style.height = !noUI ? '100vh' : `500px`;
-        document.body.appendChild(mapElement);
+                if (number >= 100000) {
+                    return '100K +';
+                }
 
-        const map = L.map(mapElement, {
-            attributionControl: !noUI,
-            zoomControl: !noUI,
-            fadeAnimation: !noUI,
-            zoomAnimation: !noUI
-        }).setView([0, 0], 2);
-        const tileLayer = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-            attribution: '&copy; OpenStreetMap Developers'
-        }).addTo(map);
+                if (number >= 10000) {
+                    return numberAsString.substring(0, 2) + ',' + numberAsString.substring(2, 5);
+                }
 
-        const lons = [];
-        const lats = [];
+                if (number >= 1000) {
+                    return numberAsString.substring(0, 1) + ',' + numberAsString.substring(1, 5);
+                }
 
-        const icons = decodeURIComponent(urlParams.toString()).split('&abc').slice(1);
-        for (let cat of icons) {
-            cat = cat.split('&units=')[0];
-            console.log(cat.replace(/^loc\d*=/, ''))
-            cat = JSON.parse(cat.replace(/^loc\d*=/, ''));
-            const keys = Object.keys(cat);
-            if (keys.length == 2) {
-                const first = Object.values(cat)[0];
-                const second = Object.values(cat)[1];
-                const firstMarker = placeIcon(first.lat, first.lon, first.icon, map);
-                const secondMarker = placeIcon(second.lat, second.lon, second.icon, map);
-                lons.push(first.lon, second.lon);
-                lats.push(first.lat, second.lat);
+                return numberAsString;
+            };
 
-                var polyline = L.polyline([[first.lat, first.lon], [second.lat, second.lon]], {
-                    color: 'red',
-                    dashArray: '10, 8'
-                }).addTo(map);
-                
-                if (icons.length < 3) {
-                    // Calculate the distance between the two points
-                    var distance = firstMarker.getLatLng().distanceTo(secondMarker.getLatLng());
+            const placeIcon = (lat, lon, icon, map) => {
+                var customIcon = L.divIcon({
+                    className: 'custom-icon',
+                    html: '<img src="' + icon + '" class="custom-icon-img"/>',
+                    iconSize: [40, 40],
+                    iconAnchor: [20, 20]
+                });
 
-                    // Display the distance as a text label on the map
+                if (icon) return L.marker([lat, lon], { icon: customIcon }).addTo(map);
+                else return L.marker([lat, lon]).addTo(map);
+            };
+
+            var urlParams = new URLSearchParams(window.location.search);
+            var units = urlParams.get('units') || 'metric';
+            var noUI = urlParams.get('noui') == 'true' ? true : false;
+
+            const mapElement = document.createElement('div');
+            if (noUI) mapElement.style.width = `800px`;
+            mapElement.style.height = !noUI ? '100vh' : `500px`;
+            document.body.appendChild(mapElement);
+
+            const map = L.map(mapElement, {
+                attributionControl: !noUI,
+                zoomControl: !noUI,
+                fadeAnimation: !noUI,
+                zoomAnimation: !noUI
+            }).setView([0, 0], 2);
+            const tileLayer = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '&copy; OpenStreetMap Developers'
+            }).addTo(map);
+
+            const lons = [];
+            const lats = [];
+
+            urlParams.forEach((value, key) => {
+                if (!key.startsWith('abc')) return;
+
+                const cat = key.slice('abcloc'.length);
+                const icons = JSON.parse(value);
+                const iconCount = Object.keys(icons).length;
+
+                const markers = [];
+
+                for (const [iconName, icon] of Object.entries(icons)) {
+                    console.log(`Placing icon at lat: ${icon.lat}, lon: ${icon.lon}`);
+                    lons.push(icon.lon);
+                    lats.push(icon.lat);
+
+                    markers.push(placeIcon(icon.lat, icon.lon, icon.icon, map));
+                }
+
+                if (iconCount == 2) {
+                    var polyline = L.polyline(
+                        markers.map((marker) => marker.getLatLng()),
+                        {
+                            color: 'red',
+                            dashArray: '10, 8'
+                        }
+                    );
+
+                    polyline.addTo(map);
+
+                    var distance = markers[0].getLatLng().distanceTo(markers[1].getLatLng());
+
                     var textLabel = L.divIcon({
                         className: 'text-label',
                         html: '<div id="text-label">' + formatDistance(distance / 1000, units) + '</div>'
                     });
 
                     var distanceMarker = L.marker(polyline.getBounds().getCenter(), { icon: textLabel }).addTo(map);
-                };
-            } else {
-                const first = Object.values(cat)[0];
-                lons.push(first.lon);
-                lats.push(first.lat);
-                placeIcon(first.lat, first.lon, first.icon, map);
-            };
-        };
+                }
+            });
 
-        var bounds = L.latLngBounds([[Math.min(...lats), Math.min(...lons)], [Math.max(...lats), Math.max(...lons)]]);
-        map.fitBounds(bounds.pad(0.05));
+            var bounds = L.latLngBounds([
+                [Math.min(...lats), Math.min(...lons)],
+                [Math.max(...lats), Math.max(...lons)]
+            ]);
+            map.fitBounds(bounds.pad(0.05));
 
-        const mapDoneEvent = new Event('mapDone');
-        document.dispatchEvent(mapDoneEvent);
-    </script>
-</body>
+            const mapDoneEvent = new Event('mapDone');
+            document.dispatchEvent(mapDoneEvent);
+        </script>
+    </body>
 </html>
